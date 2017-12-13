@@ -1,0 +1,43 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <meta charset="utf-8" />
+    <script src="angularv1.6.4.min.js"></script>
+    <script> 
+        // Angular app initialization
+        var custApp = angular.module("custApp", []);
+        //Conroller registration
+        custApp.controller("CustomerController", Customer);
+
+        function Customer($scope, $rootScope) {
+            //debugger;
+            $rootScope.customerAddress = 'Dinesh Rekula';
+            $rootScope.balance = 0;
+            $rootScope.etherAddress = '0x0';
+        } 
+
+    </script>
+</head> 
+<body ng-app="custApp">
+    <h1> Ether Bank</h1><hr />
+    <br/><br/>
+    <h3>{{ customerAddress }} - {{ etherAddress }}</h3> 
+    <hr />
+    <div id="CustScreen" ng-controller="CustomerController">
+        balance : {{balance}} <br />
+        <input ng-click="getBalance()" type="button" name="name" value="Get Balance" />
+        <br />
+        <h3>Transfer</h3>
+        to : <input ng-model="toAccount" type="text" id="toAccount" />       
+        amount : <input ng-model="amount" type="text" id="amount" />
+        <input ng-click="transfer()" type="button" name="name" value="transfer" />
+        <br />
+        <h3>Issue</h3>
+        Issue to : <input ng-model="accToIssue" type="text" id="toAccount" />    
+        amount : <input ng-model="issueAmmount" type="text" id="issueAmount" />
+        <input ng-click="issue()" type="button" name="name" value="Issue" />
+
+    </div>
+</body>
+</html>

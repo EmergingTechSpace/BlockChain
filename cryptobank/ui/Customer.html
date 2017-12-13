@@ -1,0 +1,88 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <meta charset="utf-8" />
+    <script src="angularv1.6.4.min.js"></script>
+    <script src="bignumber.js"></script>
+    <script> 
+        //WEB3 CONNECTION
+        web3 = new Web3(web3.currentProvider);
+        //CoinBase Account 
+        var etherAddress = web3.eth.coinbase;
+
+        //Contract objects
+        var contractAddress = '0x4341baf23b320e1cbb9413cf351d37c43b7c469d';
+        var contractABI = [{ "constant": true, "inputs": [], "name": "totalAmount", "outputs": [{ "name": "", "type": "uint256" }], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": true, "inputs": [{ "name": "", "type": "address" }], "name": "balances", "outputs": [{ "name": "", "type": "uint256" }], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": false, "inputs": [{ "name": "_accholder", "type": "address" }, { "name": "_amount", "type": "uint256" }], "name": "IssueEther", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [{ "name": "_to", "type": "address" }, { "name": "_amount", "type": "uint256" }], "name": "Transfer", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": true, "inputs": [{ "name": "_accHolder", "type": "address" }], "name": "balanceOf", "outputs": [{ "name": "", "type": "uint256" }], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": true, "inputs": [], "name": "owner", "outputs": [{ "name": "", "type": "address" }], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": true, "inputs": [], "name": "listAccounts", "outputs": [{ "name": "", "type": "address[]" }], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": true, "inputs": [{ "name": "", "type": "uint256" }], "name": "accounts", "outputs": [{ "name": "", "type": "address" }], "payable": false, "stateMutability": "view", "type": "function" }, { "inputs": [], "payable": false, "stateMutability": "nonpayable", "type": "constructor" }, { "anonymous": false, "inputs": [{ "indexed": false, "name": "_accHolder", "type": "address" }, { "indexed": false, "name": "_value", "type": "uint256" }], "name": "EDeposit", "type": "event" }, { "anonymous": false, "inputs": [{ "indexed": false, "name": "_from", "type": "address" }, { "indexed": false, "name": "_to", "type": "address" }, { "indexed": false, "name": "_value", "type": "uint256" }], "name": "ETransfer", "type": "event" }];
+
+        var contract = web3.eth.contract(contractABI);;
+        var instanceContract = contract.at(contractAddress); 
+
+        // Angular app initialization
+        var custApp = angular.module("custApp", []);
+        //Conroller registration
+        custApp.controller("CustomerController", Customer);
+
+        function Customer($scope, $rootScope, $window) {
+            //debugger;
+            $rootScope.customerAddress = 'Dinesh Rekula';
+            $scope.balance = '0';
+            $rootScope.etherAddress = $window.etherAddress;
+
+            //methods
+            $scope.getBalance = function () {
+                instanceContract.balanceOf($rootScope.etherAddress, function (err, result) { 
+                    $scope.balance = new BigNumber(result).toString();
+                }); 
+            }
+
+            $scope.issue = function () { 
+                console.log(new BigNumber($scope.issueAmmount));
+                instanceContract.IssueEther.estimateGas($scope.accToIssue, new BigNumber($scope.issueAmmount), function (err, result) {
+                    var estimatedGas = result;
+                    console.log(estimatedGas);
+                    instanceContract.IssueEther($scope.accToIssue, new BigNumber($scope.issueAmmount), { from: $rootScope.etherAddress, gas: estimatedGas }, function (err, result) {
+                        console.log(result);
+                        alert("Tx submitted to network " + result);
+                    });
+                }); 
+            }
+
+            $scope.transfer = function () { 
+                console.log(new BigNumber($scope.amount));
+                instanceContract.Transfer.estimateGas($scope.toAccount, new BigNumber($scope.amount), function (err, result) {
+                    var estimatedGas = result;
+                    console.log(estimatedGas);
+                    instanceContract.Transfer($scope.toAccount, new BigNumber($scope.amount), {}, function (err, result) {
+                        console.log(result);
+                    });
+                });
+            }
+
+
+        } 
+
+    </script>
+</head> 
+<body ng-app="custApp">
+    <h1> Crypto Bank</h1><hr />
+    <br/><br/>
+    <h3>{{ customerAddress }} - {{ etherAddress }}</h3> 
+    <hr />
+    <div id="CustScreen" ng-controller="CustomerController">
+        balance : {{balance}} <br />
+        <input ng-click="getBalance()" type="button" name="name" value="Get Balance" />
+        <br />
+        <h3>Transfer</h3>
+        to : <input ng-model="toAccount" type="text" id="toAccount" />       
+        amount : <input ng-model="amount" type="text" id="amount" />
+        <input ng-click="transfer()" type="button" name="name" value="transfer" />
+        <br />
+        <h3>Issue</h3>
+        Issue to : <input ng-model="accToIssue" type="text" id="toAccount" />     
+        amount : <input ng-model="issueAmmount" type="text" id="issueAmount" />
+        <input ng-click="issue()" type="button" name="name" value="Issue" />
+
+    </div>
+</body>
+</html>
